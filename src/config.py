@@ -1,16 +1,11 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # ---- Universe ----
-TICKERS =[
-  "AAPL","MSFT","NVDA","AMZN","GOOGL",
-  "META","TSLA","JPM","V","MA",
-  "XOM","UNH","HD","PG","LLY",
-  "COST","AVGO","PEP","KO","MRK",
-]
+TICKERS =[ "OSS","ONDS","AMD","CRSP","NOW" ]
 
 # ---- Date Range ----
-START_DATE = "2010-01-01"
-END_DATE = datetime.now().strftime("%Y-%m-%d")
+END_DATE = datetime.today().strftime("%Y-%m-%d")
+START_DATE = (datetime.today() - timedelta(days=365*2 - 7)).strftime("%Y-%m-%d")
 
 # ---- Bars ----
 MULTIPLIER = 1

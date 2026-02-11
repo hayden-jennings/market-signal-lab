@@ -7,10 +7,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 API_KEY = os.getenv("POLYGON_API_KEY")
+BASE_URL = os.getenv("MARKET_DATA_BASE_URL", "https://api.polygon.io")
 
-BASE_URL = "https://api.polygon.io"
-
-def get_aggregate(
+def get_aggregates(
     ticker: str,
     multiplier: int,
     timespan: str,
@@ -37,10 +36,27 @@ def get_aggregate(
     all_results = []
 
     while True:
-        response = requests.get(url, params=params)
-        response.raise_for_status()
+        max_retries = 6
+        backoff = 1.0
+        
+        for _ in range(max_retries):
+            response = requests.get(url, params=params)
+        
+            # Rate limit handling
+            if response.status_code == 429:
+                print(f"Rate limit hit. Retrying in {backoff:.1f} seconds...")
+                time.sleep(backoff)
+                backoff *= 2  # Exponential backoff
+                continue
+                
+            response.raise_for_status()
+            data = response.json()
+            break
 
-        data = response.json()
+        else:
+            #exhausted retries
+            return pd.DataFrame()  # Return empty DataFrame on failure
+
 
         results = data.get("results", [])
         all_results.extend(results)
@@ -61,7 +77,7 @@ def get_aggregate(
     df = pd.DataFrame(all_results)
 
     df["ticker"] = ticker
-    df["timestamp"] = pd.to_datetime(df["t"], unit="ms")
+    df["datetime"] = pd.to_datetime(df["t"], unit="ms")
 
     df = df.rename(
         columns={
@@ -73,4 +89,4 @@ def get_aggregate(
         }
     )
 
-    return df[["ticker", "timestamp", "open", "high", "low", "close", "volume"]]
+    return df[["ticker", "datetime", "open", "high", "low", "close", "volume"]]
