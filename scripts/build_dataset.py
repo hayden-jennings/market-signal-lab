@@ -63,7 +63,7 @@ def main():
     print("Shape:", df.shape)
     print("Unique tickers:", sorted(df["ticker"].unique()))
     print("Label mean (pct positive):", df["label"].mean())
-    print(df.head(5))
+    print(df.head(10))
 
 if __name__ == "__main__":
     main()
