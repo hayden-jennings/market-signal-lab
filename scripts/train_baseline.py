@@ -23,13 +23,17 @@ def main():
     y = df["label"]
 
     # ---- Time split ----
-    split_idx = int(len(df) * 0.7)
+    df = df.sort_values(["datetime", "ticker"]).reset_index(drop=True)
 
-    X_train = X.iloc[:split_idx]
-    X_test = X.iloc[split_idx:]
-    
-    y_train = y.iloc[:split_idx]
-    y_test = y.iloc[split_idx:]
+    cutoff = df["datetime"].quantile(0.7)
+
+    train_mask = df["datetime"] <= cutoff
+    test_mask = df["datetime"] > cutoff
+
+    X_train = X[train_mask]
+    X_test = X[test_mask]
+    y_train = y[train_mask]
+    y_test = y[test_mask]
 
     # ---- Model ----
     model = Pipeline([
